@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS users(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" varchar(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS groups(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" varchar(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS user_groups(
+    userId INTEGER,
+    groupId INTEGER,
+    PRIMARY KEY (userId, groupId),
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (groupId) REFERENCES groups(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS resources(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name varchar(255) NOT NULL,
+    isPublic boolean DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS resource_shares(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    resourceId INTEGER,
+    userId INTEGER NULL,
+    groupId INTEGER NULL,
+    FOREIGN KEY (resourceId) REFERENCES resources(id) ON DELETE CASCADE,
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (groupId) REFERENCES GROUPS (id) ON DELETE CASCADE,
+    CONSTRAINT overlapping_share_constraint CHECK ((userId IS NOT NULL AND groupId IS NULL) OR (userId IS NULL AND groupId IS NOT NULL))
+);
+
