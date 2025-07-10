@@ -1,6 +1,10 @@
 {
   "name": "cyberdesk",
   "module": "index.ts",
+  "scripts": {
+    "dev": "bun --watch index.ts",
+    "seed": "sudo bun run ./db/seed.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
