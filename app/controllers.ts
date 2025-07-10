@@ -72,6 +72,45 @@ export const createControllers = (repository: Repository) => {
         );
       }
     },
+    getResourcesWithUserCount: async () => {
+      try {
+        const [allUsersCount, allResources, privateResourcesUserCounts] =
+          await Promise.all([
+            repository.getAllUsersCount(),
+            repository.getAllResources(),
+            repository.getPrivateResourcesUserCount(),
+          ]);
+
+        const privateResourcesUserCountMap = new Map();
+        for (const pr of privateResourcesUserCounts) {
+          privateResourcesUserCountMap.set(pr.resourceId, pr.userCount);
+        }
+
+        const resourcesWithUserCount = allResources.map((r) => {
+          // think of the resource as public
+          let userCount = allUsersCount.count;
+          // if not public, get the actual count
+          if (!r.isPublic) {
+            userCount = privateResourcesUserCountMap.get(r.id) || 0;
+          }
+
+          return {
+            id: r.id,
+            name: r.name,
+            isPublic: r.isPublic,
+            userCount: userCount,
+          };
+        });
+
+        return Response.json(resourcesWithUserCount);
+      } catch (error) {
+        console.error("Unhandled error occurred: ", error);
+        return Response.json(
+          { error: "internal server error, please try again." },
+          { status: 500 }
+        );
+      }
+    },
   };
 };
 

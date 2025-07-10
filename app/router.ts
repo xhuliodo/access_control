@@ -8,6 +8,9 @@ export const createRouter = (controllers: Controllers) => {
     "/user/:id/resources": {
       GET: controllers.getUserResources,
     },
+    "/resources/with-user-count": {
+      GET: controllers.getResourcesWithUserCount,
+    },
   };
 };
 
