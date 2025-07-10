@@ -2,8 +2,8 @@ import type { Controllers } from "./controllers";
 
 export const createRouter = (controllers: Controllers) => {
   return {
-    "/": {
-      GET: () => new Response("hello world!"),
+    "/resource/:id/access-list": {
+      GET: controllers.getResourceAccessList,
     },
   };
 };
