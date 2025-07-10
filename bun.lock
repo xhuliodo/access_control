@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "cyberdesk",
+      "name": "access_control",
       "dependencies": {
         "zod": "^4.0.2",
       },
