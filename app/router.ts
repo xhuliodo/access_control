@@ -11,6 +11,9 @@ export const createRouter = (controllers: Controllers) => {
     "/resources/with-user-count": {
       GET: controllers.getResourcesWithUserCount,
     },
+    "/users/with-resource-count": {
+      GET: controllers.getUsersWithResourceCount,
+    },
   };
 };
 

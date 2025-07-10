@@ -22,6 +22,14 @@ const ResourceWithUserCountSchema = z.object({
 });
 export type ResourceWithUserCount = z.infer<typeof ResourceWithUserCountSchema>;
 
+const UserWithPrivateResourceCountSchema = z.object({
+  userId: z.number(),
+  resourceCount: z.number(),
+});
+export type UserWithPrivateResourceCount = z.infer<
+  typeof UserWithPrivateResourceCountSchema
+>;
+
 export const createSqliteDatabase = (config: Config): Database => {
   const db = new Database(config.databasePath);
   return db;
@@ -126,6 +134,41 @@ export const createRepository = (db: Database) => {
 
       const results = db.query(sql).all();
       return z.array(ResourceWithUserCountSchema).parse(results);
+    },
+    getAllPublicResourceCount: async (): Promise<{ count: number }> => {
+      const sql =
+        "SELECT COUNT(id) AS count FROM resources WHERE isPublic = TRUE;";
+
+      const result = db.query(sql).get();
+      return z.object({ count: z.number() }).parse(result);
+    },
+    getUsersPrivateResourceCount: async (): Promise<
+      UserWithPrivateResourceCount[]
+    > => {
+      const sql = `
+      WITH userPrivateAccess AS (
+      SELECT rs.userId, rs.resourceId
+      FROM resource_shares rs
+      JOIN resources r ON rs.resourceId = r.id
+      WHERE rs.userId IS NOT NULL AND r.isPublic = FALSE
+      
+      UNION
+      
+      SELECT ug.userId, rs.resourceId
+      FROM resource_shares rs
+      JOIN user_groups ug ON rs.groupId = ug.groupId
+      JOIN resources r ON rs.resourceId = r.id
+      WHERE r.isPublic = FALSE
+      )
+      SELECT 
+        userId, 
+        COUNT(resourceId) AS resourceCount
+      FROM userPrivateAccess
+      GROUP BY userId;
+    `;
+
+      const result = db.query(sql).all();
+      return z.array(UserWithPrivateResourceCountSchema).parse(result);
     },
   };
 };
