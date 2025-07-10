@@ -57,6 +57,31 @@ export const createRepository = (db: Database) => {
       const results = db.query(sql).all({ ":resourceId": id });
       return z.array(UserSchema).parse(results);
     },
+    getUserResources: async (id: number): Promise<Resource[]> => {
+      const sql = `
+      SELECT r.id, r.name, r.isPublic
+      FROM resources r
+      JOIN resource_shares rs ON r.id = rs.resourceId
+      WHERE rs.userId = :userId
+
+      UNION
+
+      SELECT r.id, r.name, r.isPublic
+      FROM resources r
+      JOIN resource_shares rs ON r.id = rs.resourceId
+      JOIN user_groups ug ON rs.groupId = ug.groupId
+      WHERE ug.userId = :userId
+
+      UNION
+
+      SELECT r.id, r.name, r.isPublic
+      FROM resources r
+      WHERE r.isPublic = TRUE
+      `;
+
+      const results = db.query(sql).all({ ":userId": id });
+      return z.array(ResourceSchema).parse(results);
+    },
   };
 };
 export type Repository = ReturnType<typeof createRepository>;

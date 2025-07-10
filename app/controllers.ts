@@ -48,6 +48,30 @@ export const createControllers = (repository: Repository) => {
         );
       }
     },
+    getUserResources: async (req: BunRequest) => {
+      try {
+        const parsedParams = ParamsWithIdSchema.safeParse(req.params);
+        if (!parsedParams.success) {
+          return Response.json(
+            {
+              error: "invalid 'id' parameter",
+              issues: z.treeifyError(parsedParams.error).properties?.id?.errors,
+            },
+            { status: 400 }
+          );
+        }
+        const userId = parsedParams.data.id;
+
+        const userResources = await repository.getUserResources(userId);
+        return Response.json(userResources);
+      } catch (error) {
+        console.error("Unhandled error occurred: ", error);
+        return Response.json(
+          { error: "internal server error, please try again." },
+          { status: 500 }
+        );
+      }
+    },
   };
 };
 

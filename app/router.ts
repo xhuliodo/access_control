@@ -5,6 +5,9 @@ export const createRouter = (controllers: Controllers) => {
     "/resource/:id/access-list": {
       GET: controllers.getResourceAccessList,
     },
+    "/user/:id/resources": {
+      GET: controllers.getUserResources,
+    },
   };
 };
 
