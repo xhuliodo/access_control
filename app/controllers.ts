@@ -111,34 +111,42 @@ export const createControllers = (repository: Repository) => {
         );
       }
     },
-        getUsersWithResourceCount: async () => {
-      const [allPublicResourceCount, allUsers, usersPrivateResouceCounts] =
-        await Promise.all([
-          repository.getAllPublicResourceCount(),
-          repository.getAllUsers(),
-          repository.getUsersPrivateResourceCount(),
-        ]);
+    getUsersWithResourceCount: async () => {
+      try {
+        const [allPublicResourceCount, allUsers, usersPrivateResouceCounts] =
+          await Promise.all([
+            repository.getAllPublicResourceCount(),
+            repository.getAllUsers(),
+            repository.getUsersPrivateResourceCount(),
+          ]);
 
-      const usersPrivateResouceCountsMap = new Map();
-      for (const upr of usersPrivateResouceCounts) {
-        usersPrivateResouceCountsMap.set(upr.userId, upr.resourceCount);
+        const usersPrivateResouceCountsMap = new Map();
+        for (const upr of usersPrivateResouceCounts) {
+          usersPrivateResouceCountsMap.set(upr.userId, upr.resourceCount);
+        }
+
+        const usersWithResourceCount = allUsers.map((u) => {
+          // add exclusively all public resources
+          let resourceCount = allPublicResourceCount.count;
+          // add private only resources to the count
+          const privateCount = usersPrivateResouceCountsMap.get(u.id) || 0;
+          resourceCount += privateCount;
+
+          return {
+            userId: u.id,
+            name: u.name,
+            resourceCount,
+          };
+        });
+
+        return Response.json(usersWithResourceCount);
+      } catch (error) {
+        console.error("Unhandled error occurred: ", error);
+        return Response.json(
+          { error: "internal server error, please try again." },
+          { status: 500 }
+        );
       }
-
-      const usersWithResourceCount = allUsers.map((u) => {
-        // add exclusively all public resources
-        let resourceCount = allPublicResourceCount.count;
-        // add private only resources to the count
-        const privateCount = usersPrivateResouceCountsMap.get(u.id) || 0;
-        resourceCount += privateCount;
-
-        return {
-          userId: u.id,
-          name: u.name,
-          resourceCount,
-        };
-      });
-
-      return Response.json(usersWithResourceCount);
     },
   };
 };
